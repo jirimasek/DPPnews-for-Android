@@ -1,4 +1,4 @@
-package cz.jirimasek.dppnews.android.data.client;
+package cz.jirimasek.dppnews.android.model;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,18 +14,17 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.util.Log;
 
-public class IncidentsClient
+public class IncidentClient
 {
 
     public String callWebErvice(String serviceURL)
     {
-        // http get client
         HttpClient client = new DefaultHttpClient();
         HttpGet getRequest = new HttpGet();
         
         try
         {
-            // construct a URI object
+            // Construct a URI object
             getRequest.setURI(new URI(serviceURL));
         }
         catch (URISyntaxException e)
@@ -33,13 +32,12 @@ public class IncidentsClient
             Log.e("URISyntaxException", e.toString());
         }
         
-        // buffer reader to read the response
         BufferedReader in = null;
-        // the service response
         HttpResponse response = null;
+        
         try
         {
-            // execute the request
+            // Execute the request
             response = client.execute(getRequest);
         }
         catch (ClientProtocolException e)
@@ -90,7 +88,6 @@ public class IncidentsClient
             Log.e("IO exception", e.toString());
         }
         
-        // response, need to be parsed
         return buff.toString();
     }
 

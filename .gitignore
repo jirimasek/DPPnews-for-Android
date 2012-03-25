@@ -6,3 +6,6 @@ dppnewsforandroid.jar
 org.eclipse.core.resources.prefs
 .project
 .classpath
+jarlist.cache
+project.properties
+default.properties
