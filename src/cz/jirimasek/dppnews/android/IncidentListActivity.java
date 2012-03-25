@@ -1,7 +1,9 @@
 package cz.jirimasek.dppnews.android;
 
+import cz.jirimasek.dppnews.android.data.IncidentsProvider;
 import cz.jirimasek.dppnews.android.data.client.IncidentsClient;
 import android.app.ListActivity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -18,10 +20,12 @@ public class IncidentListActivity extends ListActivity
 
         String[] values = new String[] { "Android", "iPhone", "WindowsMobile",
                 "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
-                "Linux", "OS/2" };
+                "Linux", "OS/3" };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 R.layout.incidentlist, R.id.label, values);
+        
+        String neco = getContentResolver().getType(Uri.parse(IncidentsProvider.CONTENT_URI.toString() + "/auta"));
 
         IncidentsClient ila = new IncidentsClient();
         

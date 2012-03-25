@@ -1,0 +1,8 @@
+bin/classes
+classes.dex
+bin/res
+resources.ap_
+dppnewsforandroid.jar
+org.eclipse.core.resources.prefs
+.project
+.classpath

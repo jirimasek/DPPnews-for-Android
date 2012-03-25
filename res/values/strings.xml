@@ -3,5 +3,8 @@
 
     <string name="hello">Hello World, MainActivity!</string>
     <string name="app_name">DPPnewsForAndroid</string>
+    <string name="inc_name">Incidents</string>
+    <string name="loc_name">Location</string>
+    <string name="map_name">Map</string>
 
 </resources>
