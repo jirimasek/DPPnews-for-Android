@@ -12,13 +12,18 @@ import android.database.MatrixCursor;
 import android.net.Uri;
 import android.util.Log;
 
+/**
+ * <code>IncidentProvider</code>
+ * 
+ * @author Jiří Mašek <email@jirimasek.cz>
+ */
 public class IncidentProvider extends ContentProvider
 {
 
-    public static final Uri         CONTENT_URI         = Uri.parse("content://cz.jirimasek.dppnews.android.provider.incidentprovider");
+    public static final Uri CONTENT_URI = Uri.parse("content://cz.jirimasek.dppnews.android.provider.incidentprovider");
 
-    private static final int        INCIDENT_ALL_ROWS   = 1;
-    private static final int        INCIDENT_SINGLE_ROW = 2;
+    private static final int INCIDENT_ALL_ROWS = 1;
+    private static final int INCIDENT_SINGLE_ROW = 2;
 
     private static final UriMatcher uriMatcher;
 
@@ -84,42 +89,46 @@ public class IncidentProvider extends ContentProvider
                 try
                 {
                     JSONObject resp = new JSONObject(response);
-                    
-                    JSONArray incidents = resp.getJSONArray("incidents");
-                    
-                    Log.i(IncidentProvider.class.getName(), "Number of entries "
-                            + incidents.length());
 
-                    /*{   "about":"http://www.dpp.cz/mimoradne-udalosti/1203251546",
-                        "events":"Dopravní nehoda",
-                        "lines":[{"number":"17","transport":"Tram"},{"number":"18","transport":"Tram"}],
-                        "origin":"2012-03-25T15:46:00Z",
-                        "renew":"2012-03-25T15:59:00Z",
-                        "stretch":"Národní divadlo - Staroměstská"
-                    }*/
-                    
-                    String[] columnNames = new String[] {  "_id", "about", "stretch"};
+                    JSONArray incidents = resp.getJSONArray("incidents");
+
+                    Log.i(IncidentProvider.class.getName(),
+                            "Number of entries " + incidents.length());
+
+                    /*
+                     * {
+                     * "about":"http://www.dpp.cz/mimoradne-udalosti/1203251546"
+                     * , "events":"Dopravní nehoda",
+                     * "lines":[{"number":"17","transport"
+                     * :"Tram"},{"number":"18","transport":"Tram"}],
+                     * "origin":"2012-03-25T15:46:00Z",
+                     * "renew":"2012-03-25T15:59:00Z",
+                     * "stretch":"Národní divadlo - Staroměstská" }
+                     */
+
+                    String[] columnNames = new String[] { "_id", "about",
+                            "stretch" };
 
                     MatrixCursor cursor = new MatrixCursor(columnNames);
-                    
+
                     for (int i = 0; i < incidents.length(); i++)
                     {
                         JSONObject incident = incidents.getJSONObject(i);
 
                         String about = incident.getString("about");
                         String stretch = incident.getString("stretch");
-                        
+
                         int index = about.lastIndexOf("/");
-                        
+
                         String id = about.substring(index + 1);
 
                         String[] inc = new String[] { id, about, stretch };
-                        
+
                         cursor.addRow(inc);
-                        
+
                         Log.i(IncidentProvider.class.getName(), stretch);
                     }
-                    
+
                     return cursor;
                 }
                 catch (Exception e)
@@ -130,7 +139,7 @@ public class IncidentProvider extends ContentProvider
                 return null;
 
             default:
-                
+
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
     }

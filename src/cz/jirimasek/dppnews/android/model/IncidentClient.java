@@ -14,9 +14,19 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.util.Log;
 
+/**
+ * <code>IncidentClient</code>
+ * 
+ * @author Jiří Mašek <email@jirimasek.cz>
+ */
 public class IncidentClient
 {
 
+    /**
+     * 
+     * @param serviceURL
+     * @return
+     */
     public String callWebErvice(String serviceURL)
     {
         HttpClient client = new DefaultHttpClient();

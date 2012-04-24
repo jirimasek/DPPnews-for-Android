@@ -18,8 +18,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/**
+ * <code>IncidentListView</code>
+ * 
+ * @author Jiří Mašek <email@jirimasek.cz>
+ */
 public class IncidentListView extends ListActivity
 {
+    /**
+     * 
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
