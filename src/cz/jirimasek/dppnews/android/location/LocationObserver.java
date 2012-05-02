@@ -9,6 +9,7 @@ import android.location.Location;
  */
 public interface LocationObserver
 {
+
     /**
      * 
      * @param location

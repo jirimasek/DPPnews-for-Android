@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.jirimasek.dppnews.android.R;
-import cz.jirimasek.dppnews.android.provider.IncidentProvider;
+import cz.jirimasek.dppnews.android.model.providers.IncidentProvider;
 
 import android.app.ListActivity;
 import android.database.Cursor;

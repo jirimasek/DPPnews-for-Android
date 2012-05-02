@@ -35,8 +35,15 @@
         </activity>
         
         <provider
-            android:name=".provider.IncidentProvider"
+            android:name=".model.providers.IncidentProvider"
             android:authorities="cz.jirimasek.dppnews.android.provider.incidentprovider"
+            android:multiprocess="true"
+            android:exported="true" >
+        </provider>
+        
+        <provider
+            android:name=".model.providers.PublicTransportProvider"
+            android:authorities="cz.jirimasek.dppnews.android.provider.publictransportprovider"
             android:multiprocess="true"
             android:exported="true" >
         </provider>

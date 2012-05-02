@@ -1,9 +1,9 @@
-package cz.jirimasek.dppnews.android.provider;
+package cz.jirimasek.dppnews.android.model.providers;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import cz.jirimasek.dppnews.android.model.IncidentClient;
+import cz.jirimasek.dppnews.android.model.RestApiClient;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
@@ -39,12 +39,12 @@ public class IncidentProvider extends ContentProvider
                 "incident/#", INCIDENT_SINGLE_ROW);
     }
 
-    private IncidentClient client;
+    private RestApiClient client;
 
     @Override
     public boolean onCreate()
     {
-        client = new IncidentClient();
+        client = new RestApiClient();
 
         return true;
     }

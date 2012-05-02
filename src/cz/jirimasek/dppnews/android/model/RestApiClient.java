@@ -15,11 +15,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import android.util.Log;
 
 /**
- * <code>IncidentClient</code>
+ * <code>RestApiClient</code>
  * 
  * @author Jiří Mašek <email@jirimasek.cz>
  */
-public class IncidentClient
+public class RestApiClient
 {
 
     /**
@@ -46,7 +46,7 @@ public class IncidentClient
         HttpResponse response = null;
         
         try
-        {
+        {   
             // Execute the request
             response = client.execute(getRequest);
         }
