@@ -12,9 +12,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
-import android.widget.ZoomControls;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -45,6 +43,7 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
     private LocationProvider locationProvider;
     private NearestStopsProvider nearestStopsProvider;
     private ProgressDialog progressDialog;
+    private Collection<Stop> stops;
 
     /**
      * 
@@ -59,9 +58,10 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
         nearestStopsProvider = new NearestStopsProvider();
 
         setContentView(R.layout.mapview);
-        
-        MapView map = (MapView) findViewById(R.id.mapview);
-        map.setBuiltInZoomControls(true);
+
+        MapView mapView = (MapView) findViewById(R.id.mapview);
+
+        mapView.setBuiltInZoomControls(true);
     }
 
     /**
@@ -71,9 +71,20 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
     public void onResume()
     {
         super.onResume();
-        
+
+        // Clear overlays
+
+        MapView mapView = (MapView) findViewById(R.id.mapview);
+        List<Overlay> mapOverlays = mapView.getOverlays();
+
+        if (!mapOverlays.isEmpty())
+        {
+            mapOverlays.clear();
+            mapView.invalidate();
+        }
+
         // Create progress dialog
-        
+
         Resources resources = getResources();
         String message = resources.getString(R.string.waiting_for_location);
 
@@ -83,7 +94,7 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
         progressDialog.setMessage(message);
 
         progressDialog.show();
-        
+
         // Start waiting for current location
 
         locationProvider.getLocation(this, this);
@@ -176,7 +187,8 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
         // Mark current position in map
 
         List<Overlay> mapOverlays = mapView.getOverlays();
-        Drawable drawable = getResources().getDrawable(R.drawable.direction_down);
+        Drawable drawable = getResources().getDrawable(
+                R.drawable.direction_down);
 
         MarkerOverlay locationMarker = new MarkerOverlay(drawable);
         OverlayItem locationDescription = new OverlayItem(point, "", "");
@@ -185,7 +197,7 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
         mapOverlays.add(locationMarker);
 
         // Retrieve nearest stops
-        
+
         if (progressDialog != null && progressDialog.isShowing())
         {
             runOnUiThread(new Runnable() {
@@ -194,8 +206,9 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
                 public void run()
                 {
                     Resources resources = getResources();
-                    String message = resources.getString(R.string.waiting_for_nearest_stops);
-                    
+                    String message = resources
+                            .getString(R.string.waiting_for_nearest_stops);
+
                     progressDialog.setMessage(message);
                 }
             });
@@ -213,68 +226,83 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
      * @param stops
      */
     @Override
-    public void gotNearestStops(Collection<Stop> stops)
+    public void gotNearestStops(Collection<Stop> collection)
     {
-        
-        MapView mapView = (MapView) findViewById(R.id.mapview);
-        List<Overlay> mapOverlays = mapView.getOverlays();
+        this.stops = collection;
 
-        Drawable busIcon = getResources().getDrawable(R.drawable.bus);
-        Drawable funicularIcon = getResources().getDrawable(R.drawable.funicular);
-        Drawable tramIcon = getResources().getDrawable(R.drawable.tramway);
-        Drawable subwayIcon = getResources().getDrawable(R.drawable.underground);
+        runOnUiThread(new Runnable() {
 
-        MarkerOverlay busOverlay = new MarkerOverlay(busIcon);
-        MarkerOverlay funicularOverlay = new MarkerOverlay(funicularIcon);
-        MarkerOverlay tramOverlay = new MarkerOverlay(tramIcon);
-        MarkerOverlay subwayOverlay = new MarkerOverlay(subwayIcon);
-        
-        for (Stop stop : stops)
-        {
-            if (!CollectionUtils.isNullOrEmpty(stop.getPlatforms()))
+            public void run()
             {
-                
-                for (Platform platform : stop.getPlatforms())
+
+                MapView mapView = (MapView) findViewById(R.id.mapview);
+                List<Overlay> mapOverlays = mapView.getOverlays();
+
+                Drawable busIcon = getResources().getDrawable(R.drawable.bus);
+                Drawable funicularIcon = getResources().getDrawable(
+                        R.drawable.funicular);
+                Drawable tramIcon = getResources().getDrawable(
+                        R.drawable.tramway);
+                Drawable subwayIcon = getResources().getDrawable(
+                        R.drawable.underground);
+
+                MarkerOverlay busOverlay = new MarkerOverlay(busIcon);
+                MarkerOverlay funicularOverlay = new MarkerOverlay(
+                        funicularIcon);
+                MarkerOverlay tramOverlay = new MarkerOverlay(tramIcon);
+                MarkerOverlay subwayOverlay = new MarkerOverlay(subwayIcon);
+
+                for (Stop stop : stops)
                 {
-                    GeoPoint point = new GeoPoint(platform.getLatitude(), platform.getLongitude());
-                    
-                    OverlayItem platformMarker = new OverlayItem(point, stop.getName(), null);
-
-                    switch (platform.getTransport())
+                    if (!CollectionUtils.isNullOrEmpty(stop.getPlatforms()))
                     {
-                        case BUS:
-                            busOverlay.addOverlay(platformMarker);
-                            break;
 
-                        case FUNICULAR:
-                            funicularOverlay.addOverlay(platformMarker);
-                            break;
+                        for (Platform platform : stop.getPlatforms())
+                        {
+                            GeoPoint point = new GeoPoint(
+                                    platform.getLatitude(),
+                                    platform.getLongitude());
 
-                        case TRAM:
-                            tramOverlay.addOverlay(platformMarker);
-                            break;
+                            OverlayItem platformMarker = new OverlayItem(point,
+                                    stop.getName(), null);
 
-                        case SUBWAY:
-                        case SUBWAY_ENTRY:
-                            subwayOverlay.addOverlay(platformMarker);
-                            break;
+                            switch (platform.getTransport())
+                            {
+                                case BUS:
+                                    busOverlay.addOverlay(platformMarker);
+                                    break;
+
+                                case FUNICULAR:
+                                    funicularOverlay.addOverlay(platformMarker);
+                                    break;
+
+                                case TRAM:
+                                    tramOverlay.addOverlay(platformMarker);
+                                    break;
+
+                                case SUBWAY:
+                                case SUBWAY_ENTRY:
+                                    subwayOverlay.addOverlay(platformMarker);
+                                    break;
+                            }
+                        }
                     }
                 }
+
+                mapOverlays.add(busOverlay);
+                mapOverlays.add(funicularOverlay);
+                mapOverlays.add(tramOverlay);
+                mapOverlays.add(subwayOverlay);
+
+                mapView.invalidate();
+
+                // Dismiss progress dialog
+
+                if (progressDialog != null && progressDialog.isShowing())
+                {
+                    progressDialog.dismiss();
+                }
             }
-            
-        }
-        
-        mapOverlays.add(busOverlay);
-        mapOverlays.add(funicularOverlay);
-        mapOverlays.add(tramOverlay);
-        mapOverlays.add(subwayOverlay);
-        
-        
-        // Dismiss progress dialog
-        
-        if (progressDialog != null && progressDialog.isShowing())
-        {
-            progressDialog.dismiss();
-        }
+        });
     }
 }
