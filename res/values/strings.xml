@@ -16,5 +16,7 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">DPPnews</string>
+    <string name="waiting_for_location">Načítám aktuální pozici…</string>
+    <string name="waiting_for_nearest_stops">Hledám nejbližší zastávky…</string>
 </resources>
 

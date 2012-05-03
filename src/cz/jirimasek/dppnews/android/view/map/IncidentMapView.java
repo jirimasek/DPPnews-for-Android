@@ -3,20 +3,18 @@ package cz.jirimasek.dppnews.android.view.map;
 import java.util.Collection;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
+import android.widget.ZoomControls;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -26,8 +24,10 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 import cz.jirimasek.dppnews.android.R;
+import cz.jirimasek.dppnews.android.commons.CollectionUtils;
 import cz.jirimasek.dppnews.android.location.LocationObserver;
 import cz.jirimasek.dppnews.android.location.LocationProvider;
+import cz.jirimasek.dppnews.android.model.entities.Platform;
 import cz.jirimasek.dppnews.android.model.entities.Stop;
 import cz.jirimasek.dppnews.android.model.providers.services.NearestStopsObserver;
 import cz.jirimasek.dppnews.android.model.providers.services.NearestStopsProvider;
@@ -59,6 +59,9 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
         nearestStopsProvider = new NearestStopsProvider();
 
         setContentView(R.layout.mapview);
+        
+        MapView map = (MapView) findViewById(R.id.mapview);
+        map.setBuiltInZoomControls(true);
     }
 
     /**
@@ -68,18 +71,32 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
     public void onResume()
     {
         super.onResume();
+        
+        // Create progress dialog
+        
+        Resources resources = getResources();
+        String message = resources.getString(R.string.waiting_for_location);
 
-        progressDialog = ProgressDialog.show(this, null,
-                "Načítám aktuální pozici…");
+        progressDialog = new ProgressDialog(this);
+
+        progressDialog.setCancelable(false);
+        progressDialog.setMessage(message);
+
+        progressDialog.show();
+        
+        // Start waiting for current location
 
         locationProvider.getLocation(this, this);
     }
+
+    /* ********************************************************************** */
+    /* ******************************** MENU ******************************** */
+    /* ********************************************************************** */
 
     /**
      * 
      * @param menu
      */
-    // Initiating Menu XML file (menu.xml)
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -134,10 +151,6 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
     @Override
     public void gotLocation(Location location)
     {
-        if (progressDialog != null && progressDialog.isShowing())
-        {
-            progressDialog.dismiss();
-        }
 
         // Latitude: 50.099372
         // Longitude: 14.395331
@@ -163,10 +176,9 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
         // Mark current position in map
 
         List<Overlay> mapOverlays = mapView.getOverlays();
-        Drawable drawable = getResources().getDrawable(
-                R.drawable.direction_down);
+        Drawable drawable = getResources().getDrawable(R.drawable.direction_down);
 
-        StopOverlay locationMarker = new StopOverlay(drawable);
+        MarkerOverlay locationMarker = new MarkerOverlay(drawable);
         OverlayItem locationDescription = new OverlayItem(point, "", "");
 
         locationMarker.addOverlay(locationDescription);
@@ -174,8 +186,27 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
 
         // Retrieve nearest stops
         
+        if (progressDialog != null && progressDialog.isShowing())
+        {
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run()
+                {
+                    Resources resources = getResources();
+                    String message = resources.getString(R.string.waiting_for_nearest_stops);
+                    
+                    progressDialog.setMessage(message);
+                }
+            });
+        }
+
         nearestStopsProvider.getNearestStops(this, this, point);
     }
+
+    /* ********************************************************************** */
+    /* *********************** NEAREST STOPS OBSERVER *********************** */
+    /* ********************************************************************** */
 
     /**
      * 
@@ -184,6 +215,63 @@ public class IncidentMapView extends MapActivity implements LocationObserver,
     @Override
     public void gotNearestStops(Collection<Stop> stops)
     {
+        
+        MapView mapView = (MapView) findViewById(R.id.mapview);
+        List<Overlay> mapOverlays = mapView.getOverlays();
+
+        Drawable busIcon = getResources().getDrawable(R.drawable.bus);
+        Drawable funicularIcon = getResources().getDrawable(R.drawable.funicular);
+        Drawable tramIcon = getResources().getDrawable(R.drawable.tramway);
+        Drawable subwayIcon = getResources().getDrawable(R.drawable.underground);
+
+        MarkerOverlay busOverlay = new MarkerOverlay(busIcon);
+        MarkerOverlay funicularOverlay = new MarkerOverlay(funicularIcon);
+        MarkerOverlay tramOverlay = new MarkerOverlay(tramIcon);
+        MarkerOverlay subwayOverlay = new MarkerOverlay(subwayIcon);
+        
+        for (Stop stop : stops)
+        {
+            if (!CollectionUtils.isNullOrEmpty(stop.getPlatforms()))
+            {
+                
+                for (Platform platform : stop.getPlatforms())
+                {
+                    GeoPoint point = new GeoPoint(platform.getLatitude(), platform.getLongitude());
+                    
+                    OverlayItem platformMarker = new OverlayItem(point, stop.getName(), null);
+
+                    switch (platform.getTransport())
+                    {
+                        case BUS:
+                            busOverlay.addOverlay(platformMarker);
+                            break;
+
+                        case FUNICULAR:
+                            funicularOverlay.addOverlay(platformMarker);
+                            break;
+
+                        case TRAM:
+                            tramOverlay.addOverlay(platformMarker);
+                            break;
+
+                        case SUBWAY:
+                        case SUBWAY_ENTRY:
+                            subwayOverlay.addOverlay(platformMarker);
+                            break;
+                    }
+                }
+            }
+            
+        }
+        
+        mapOverlays.add(busOverlay);
+        mapOverlays.add(funicularOverlay);
+        mapOverlays.add(tramOverlay);
+        mapOverlays.add(subwayOverlay);
+        
+        
+        // Dismiss progress dialog
+        
         if (progressDialog != null && progressDialog.isShowing())
         {
             progressDialog.dismiss();

@@ -13,7 +13,7 @@ import com.google.android.maps.OverlayItem;
  * 
  * @author Jiří Mašek <email@jirimasek.cz>
  */
-public class StopOverlay extends ItemizedOverlay<OverlayItem>
+public class MarkerOverlay extends ItemizedOverlay<OverlayItem>
 {
 
     private List<OverlayItem> mOverlays = new LinkedList<OverlayItem>();
@@ -22,9 +22,10 @@ public class StopOverlay extends ItemizedOverlay<OverlayItem>
      * 
      * @param defaultMarker
      */
-    public StopOverlay(Drawable defaultMarker)
+    public MarkerOverlay(Drawable defaultMarker)
     {
         super(boundCenterBottom(defaultMarker));
+        populate();
     }
 
     /**
